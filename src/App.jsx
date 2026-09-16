@@ -1,12 +1,44 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from "react";
+import heroImg from "./assets/hero.png";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "./assets/vite.svg";
+import "./App.css";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <button
+      type="button"
+      className="counter"
+      onClick={() => setCount((count) => count + 1)}
+    >
+      Count is {count}
+    </button>
+  );
+}
+
+//   isSvg === true ? svg : <img className="logo" src={logo} alt="" />;
+
+// if(isSvg === true){
+//   return svg;
+// } else {
+//   return <img className="logo" src={logo} alt="" />;
+// }
+
+function SectionHeader(props) {
+  const { logo, title, link, svg } = props;
+  return (
+    <li>
+      <a href={link} target="_blank">
+        {svg ? svg : <img className="logo" src={logo} alt="" />}
+        {title}
+      </a>
+    </li>
+  );
+}
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
       <section id="center">
@@ -21,13 +53,7 @@ function App() {
             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
           </p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+        <Counter />
       </section>
 
       <div className="ticks"></div>
@@ -40,18 +66,16 @@ function App() {
           <h2>Documentation</h2>
           <p>Your questions, answered</p>
           <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
+            <SectionHeader
+              title="Explore Vite"
+              logo={viteLogo}
+              link="https://vite.dev/"
+            />
+            <SectionHeader
+              title="Learn more"
+              logo={reactLogo}
+              link="https://react.dev/"
+            />
           </ul>
         </div>
         <div id="social">
@@ -61,8 +85,9 @@ function App() {
           <h2>Connect with us</h2>
           <p>Join the Vite community</p>
           <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
+            <SectionHeader
+              title="GitHub"
+              svg={
                 <svg
                   className="button-icon"
                   role="presentation"
@@ -70,11 +95,12 @@ function App() {
                 >
                   <use href="/icons.svg#github-icon"></use>
                 </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
+              }
+              link="https://github.com/vitejs/vite"
+            />
+            <SectionHeader
+              title="Discord"
+              svg={
                 <svg
                   className="button-icon"
                   role="presentation"
@@ -82,11 +108,12 @@ function App() {
                 >
                   <use href="/icons.svg#discord-icon"></use>
                 </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
+              }
+              link="https://chat.vite.dev/"
+            />
+            <SectionHeader
+              title="X.com"
+              svg={
                 <svg
                   className="button-icon"
                   role="presentation"
@@ -94,9 +121,9 @@ function App() {
                 >
                   <use href="/icons.svg#x-icon"></use>
                 </svg>
-                X.com
-              </a>
-            </li>
+              }
+              link="https://x.com/vite_js"
+            />
             <li>
               <a href="https://bsky.app/profile/vite.dev" target="_blank">
                 <svg
@@ -116,7 +143,7 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
