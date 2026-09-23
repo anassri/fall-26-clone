@@ -1,0 +1,17 @@
+.nav-button {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  padding: 12px 36px;
+  border-radius: 50px;
+  border-width: 0;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: white;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.nav-button:hover {
+  background-color: rgb(126, 216, 255);
+}
