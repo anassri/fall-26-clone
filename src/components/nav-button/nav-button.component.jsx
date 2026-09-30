@@ -1,11 +1,12 @@
 import "./nav-button.css";
+import { Link } from 'react-router';
 
 // label, onclick, isDisabled, isBusy, busyText
-export const NavButton = ({ label, onClick, icon }) => {
+export const NavButton = ({ label, onClick, icon, url }) => {
   return (
-    <button className="nav-button" onClick={onClick}>
+    <Link className="nav-button" to={url}>
       <img src={icon} width={16} />
       {label}
-    </button>
+    </Link>
   );
 };

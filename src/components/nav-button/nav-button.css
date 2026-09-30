@@ -10,8 +10,12 @@
   background-color: white;
   cursor: pointer;
   align-self: flex-start;
+  color: black;
+  text-decoration: none;
 }
 
 .nav-button:hover {
   background-color: rgb(126, 216, 255);
+  
+  color: white;
 }

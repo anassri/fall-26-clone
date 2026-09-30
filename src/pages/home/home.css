@@ -1,0 +1,23 @@
+.composer-container {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+}
+
+.tweet-container {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+}
+
+.tweet {
+    padding: 8px;
+    border: 1px solid lightgray;
+    border-radius: 8px;
+
+}
+
+.first-row{
+    display: flex;
+    align-items: center;
+}
