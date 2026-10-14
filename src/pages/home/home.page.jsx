@@ -1,5 +1,6 @@
+import { useLocalStorage } from '../../hooks/local-storage.hooks';
 import './home.css'
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 const data = [
   {
@@ -41,30 +42,40 @@ const Post = ({id,authorPhotoUrl, authorName, text, likeCount, handlePostLike })
           </div>
 }
 
+
 export const SearchComposer = ({searchKeyword,handleSearch, setSearchKeyword, handleClear })=>{
+   const {keyword, setKeyword}= useLocalStorage('mostRecentKeyword');
+
   return <div className='search-container'>
-          <input placeholder='Search' value={searchKeyword} onChange={(e)=>setSearchKeyword(e.target.value)}></input>
+          <input placeholder='Search' value={keyword} onChange={(e)=>setKeyword(e.target.value)}></input>
           <div>
             <button onClick={handleSearch}>Search</button>
           </div>
         </div>
 }
 
+// component lifecylce
+// componentDidMount => empty dependency array
+// componentDidUpdate => items in dependency array
+// componentDidUnmount
+
 const PostComposer = ({setNewTweet, newTweet, handlePosting})=>{
+  const {keyword, setKeyword}= useLocalStorage('mostRecentPost');
+
   return <div className="composer-container">
             <textarea cols={50} rows={5} placeholder="What's on your mind" 
-            onChange={(event)=>setNewTweet(event.target.value)} 
-            value={newTweet} />
+            onChange={(event)=>setKeyword(event.target.value)} 
+            value={keyword} />
             <button onClick={handlePosting}>Post</button>
           </div>
 }
 
 export const Home = () => {
   const [tweets, setTweets] = useState(data);
-  const [filteredTweets, setFilteredTweets] = useState(tweets);
   const [newTweet, setNewTweet] = useState('');
+  const [filteredTweets, setFilteredTweets] = useState(tweets);
   const [searchKeyword, setSearchKeyword] = useState('');
-
+  
   const handlePosting = ()=>{
     // const newTweetsArray = [...tweets];
     // newTweetsArray.push(newTweet);
@@ -108,12 +119,6 @@ export const Home = () => {
         setSearchKeyword={setSearchKeyword} 
         handleClear={handleClear}
       />
-       <SearchComposer 
-        searchKeyword={searchKeyword} 
-        handleSearch={handleSearch} 
-        setSearchKeyword={setSearchKeyword} 
-        handleClear={handleClear}
-      /> 
       <PostComposer 
         newTweet={newTweet}
         setNewTweet={setNewTweet}
@@ -121,18 +126,7 @@ export const Home = () => {
         />
 
       <div className='tweet-container'>
-        {filteredTweets.length !== tweets.length ?
-        filteredTweets.map((tweet)=> 
-          <Post 
-            key={tweet.id} 
-            id={tweet.id} 
-            authorPhotoUrl={tweet.authorPhotoUrl} 
-            authorName={tweet.authorName} 
-            text={tweet.text} 
-            likeCount={tweet.likeCount} 
-            handlePostLike={handlePostLike}
-            />
-       ) :tweets.map((tweet)=> 
+       { tweets.map((tweet)=> 
           <Post 
             key={tweet.id} 
             id={tweet.id} 
