@@ -1,6 +1,6 @@
 import { useLocalStorage } from '../../hooks/local-storage.hooks';
 import './home.css'
-import {useEffect, useState} from 'react';
+import {useRef, useState, useEffect, useReducer} from 'react';
 
 const data = [
   {
@@ -45,11 +45,48 @@ const Post = ({id,authorPhotoUrl, authorName, text, likeCount, handlePostLike })
 
 export const SearchComposer = ({searchKeyword,handleSearch, setSearchKeyword, handleClear })=>{
    const {keyword, setKeyword}= useLocalStorage('mostRecentKeyword');
+   const inputRef = useRef("");
+   const clearButtonRef = useRef();
+  // document.getElementById('id').addEventListener('click', ()=>{
+  //   if(keyword === ''){
+  //     document.getElementById('input').focus();
+  //   }
+  // })
+  
+  const handleSearchFunc = ()=>{
+    if(keyword.length === 0){
+      inputRef.current.focus();
+    } else {
+      handleSearch(keyword);
+    }
+  }
 
+  const handleClearSearch = ()=>{
+    setKeyword('')
+    handleClear()
+  }
+
+  // useEffect(()=>{
+  //   if(keyword.length===0){
+  //     clearButtonRef.current.style.background = "red";
+  //   } else {
+  //     clearButtonRef.current.disabled = false;
+  //   }
+  // },[keyword])
+  
   return <div className='search-container'>
-          <input placeholder='Search' value={keyword} onChange={(e)=>setKeyword(e.target.value)}></input>
+          <input 
+            placeholder='Search' 
+            value={keyword} 
+            onChange={(e)=>setKeyword(e.target.value)} 
+            ref={inputRef}
+          ></input>
           <div>
-            <button onClick={handleSearch}>Search</button>
+            <button onClick={handleSearchFunc}>Search</button>
+            <button 
+              onClick={handleClearSearch} 
+              ref={clearButtonRef}
+              disabled={keyword.length===0}>Clear</button>
           </div>
         </div>
 }
@@ -70,12 +107,40 @@ const PostComposer = ({setNewTweet, newTweet, handlePosting})=>{
           </div>
 }
 
+const initialState = {
+  tweets: [],
+  isLoading: false,
+  isError: false,
+}
+
+const tweetReducer = (state, action)=>{
+  switch (action.type){
+    case "LOADING":
+      return {...state, isLoading: true};
+    case "ERROR": 
+      return {...state, isError: true, isLoading: false};
+    case "SUCCESS":
+      return {isError: false, isLoading: false, tweets: action.payload};
+    case "ADD_NEW_TWEET":
+      return {...state, tweets: [action.payload, ...state.tweets]};
+    case "SEARCH_KEYWORD":
+      return
+    case "FILTER_TWEETS":
+      return
+  }
+}
 export const Home = () => {
   const [tweets, setTweets] = useState(data);
   const [newTweet, setNewTweet] = useState('');
   const [filteredTweets, setFilteredTweets] = useState(tweets);
   const [searchKeyword, setSearchKeyword] = useState('');
-  
+
+  const [state, dispatch] = useReducer(tweetReducer, initialState);
+
+  console.log(state);
+
+  const BASE_URL = "https://jsonplaceholder.typicode.com";
+
   const handlePosting = ()=>{
     // const newTweetsArray = [...tweets];
     // newTweetsArray.push(newTweet);
@@ -88,7 +153,8 @@ export const Home = () => {
       likeCount: 0,
       comments: []
     }
-    setTweets((prevState)=>[newTweetObject, ...prevState ]);
+    dispatch({ type: "ADD_NEW_TWEET", payload: newTweetObject})
+    // setTweets((prevState)=>[newTweetObject, ...prevState ]);
     setNewTweet('')
   }
 
@@ -102,14 +168,40 @@ export const Home = () => {
     setTweets(newTweetsArray)
   }
   
-  const handleSearch = ()=>{
-    const results = tweets.filter((tweet)=>tweet.text.toLowerCase().includes(searchKeyword.toLowerCase()));
+  const handleSearch = (value)=>{
+    console.log(value)
+    const results = tweets.filter((tweet)=>tweet.text.toLowerCase().includes(value.toLowerCase()));
     setFilteredTweets(results);
   }
   
   const handleClear = ()=>{
     setFilteredTweets(tweets)
   }
+
+
+
+
+  const fetchPosts = async ()=>{
+    // Promise
+    // fetch(`${BASE_URL}/posts`).then((data)=>{
+    //   setTweets(data)
+    // }).catch((error)=>{
+    //   console.error(error)
+    // })
+    // async/await
+    dispatch({type: "LOADING"})
+    const data = await fetch(`${BASE_URL}/posts`);
+    if(data.status === 200){
+      const body = await data.json();
+      dispatch({type: "SUCCESS", payload: body})
+    }
+
+    // setTweets(body)
+  }
+
+  useEffect(()=>{
+    fetchPosts();
+  }, [])
 
   return (
   <div>
@@ -126,13 +218,13 @@ export const Home = () => {
         />
 
       <div className='tweet-container'>
-       { tweets.map((tweet)=> 
+       { state.tweets.map((tweet)=> 
           <Post 
             key={tweet.id} 
             id={tweet.id} 
             authorPhotoUrl={tweet.authorPhotoUrl} 
-            authorName={tweet.authorName} 
-            text={tweet.text} 
+            authorName={tweet.title} 
+            text={tweet.body} 
             likeCount={tweet.likeCount} 
             handlePostLike={handlePostLike}
             />
