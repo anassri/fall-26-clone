@@ -1,6 +1,8 @@
 import { useLocalStorage } from '../../hooks/local-storage.hooks';
 import './home.css'
-import {useRef, useState, useEffect, useReducer} from 'react';
+import {useRef, useState, useEffect, useReducer,useCallback} from 'react';
+import {tweetReducer, initialState} from '../../reducers/home-reducer/home-reducer'
+import axios from 'axios'
 
 const data = [
   {
@@ -99,62 +101,33 @@ export const SearchComposer = ({searchKeyword,handleSearch, setSearchKeyword, ha
 const PostComposer = ({setNewTweet, newTweet, handlePosting})=>{
   const {keyword, setKeyword}= useLocalStorage('mostRecentPost');
 
-  return <div className="composer-container">
-            <textarea cols={50} rows={5} placeholder="What's on your mind" 
-            onChange={(event)=>setKeyword(event.target.value)} 
-            value={keyword} />
-            <button onClick={handlePosting}>Post</button>
-          </div>
-}
-
-const initialState = {
-  tweets: [],
-  isLoading: false,
-  isError: false,
-}
-
-const tweetReducer = (state, action)=>{
-  switch (action.type){
-    case "LOADING":
-      return {...state, isLoading: true};
-    case "ERROR": 
-      return {...state, isError: true, isLoading: false};
-    case "SUCCESS":
-      return {isError: false, isLoading: false, tweets: action.payload};
-    case "ADD_NEW_TWEET":
-      return {...state, tweets: [action.payload, ...state.tweets]};
-    case "SEARCH_KEYWORD":
-      return
-    case "FILTER_TWEETS":
-      return
+  const handleSubmit = (e)=>{
+    e.preventDefault();
+    handlePosting(keyword)
   }
+  return <form className="composer-container" onSubmit={handleSubmit}>
+            <textarea cols={50} rows={5} placeholder="What's on your mind" 
+              onChange={(event)=>setKeyword(event.target.value)} 
+              value={keyword} />
+            <button type="submit" >Post</button>
+          </form>
 }
+
+const BASE_URL = "https://jsonplaceholder.typicode.com";
+
+
 export const Home = () => {
   const [tweets, setTweets] = useState(data);
   const [newTweet, setNewTweet] = useState('');
   const [filteredTweets, setFilteredTweets] = useState(tweets);
   const [searchKeyword, setSearchKeyword] = useState('');
 
+
   const [state, dispatch] = useReducer(tweetReducer, initialState);
 
-  console.log(state);
 
-  const BASE_URL = "https://jsonplaceholder.typicode.com";
-
-  const handlePosting = ()=>{
-    // const newTweetsArray = [...tweets];
-    // newTweetsArray.push(newTweet);
-    // setTweets(newTweetsArray);
-    const newTweetObject =  {
-      id: tweets.length,
-      authorName: "john",
-      text: newTweet,
-      authorPhotoUrl: "https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-avatar-image-for-profile-png-image_13001882.png",
-      likeCount: 0,
-      comments: []
-    }
-    dispatch({ type: "ADD_NEW_TWEET", payload: newTweetObject})
-    // setTweets((prevState)=>[newTweetObject, ...prevState ]);
+  const handlePosting = (newPost)=>{
+    dispatch({ type: "ADD_NEW_TWEET", payload: newPost})
     setNewTweet('')
   }
 
@@ -178,32 +151,48 @@ export const Home = () => {
     setFilteredTweets(tweets)
   }
 
-
-
-
-  const fetchPosts = async ()=>{
+  const fetchPosts = useCallback(async ()=>{
+    dispatch({type: "LOADING"});
+    
     // Promise
-    // fetch(`${BASE_URL}/posts`).then((data)=>{
-    //   setTweets(data)
-    // }).catch((error)=>{
-    //   console.error(error)
+    // axios.get(`${BASE_URL}/posts`)
+    // .then((data)=>{
+    //   if(data.status === 200){
+    //     dispatch({type: 'SUCCESS', payload:data.data });
+    //   } 
+    // }).catch((e)=>{
+    //   dispatch({type: 'ERROR', payload: e.message});
     // })
-    // async/await
-    dispatch({type: "LOADING"})
-    const data = await fetch(`${BASE_URL}/posts`);
-    if(data.status === 200){
-      const body = await data.json();
-      dispatch({type: "SUCCESS", payload: body})
-    }
 
-    // setTweets(body)
-  }
+    setTimeout(async ()=>{
+      // async/await
+      try{
+        const data = await axios.get(`${BASE_URL}/posts`);
+        if(data.status === 200){
+          dispatch({type: 'SUCCESS', payload:data.data });
+        } 
+      }catch(error){
+        dispatch({type: 'ERROR', payload: error.message});
+      }
+      
+    }, 1000)
+  }, [])
+
 
   useEffect(()=>{
     fetchPosts();
   }, [])
 
-  return (
+  // if(condition){
+
+  // } else if (condition 2){
+
+  // } else {
+
+  // }
+
+  // condition ? value : condition 2 ? value 2 : value 3
+   return (
   <div>
       <SearchComposer 
         searchKeyword={searchKeyword} 
@@ -218,7 +207,9 @@ export const Home = () => {
         />
 
       <div className='tweet-container'>
-       { state.tweets.map((tweet)=> 
+       {/* { state.isLoading ? 
+       <span>Fetching tweets...</span> 
+       : state.tweets.map((tweet)=> 
           <Post 
             key={tweet.id} 
             id={tweet.id} 
@@ -228,7 +219,38 @@ export const Home = () => {
             likeCount={tweet.likeCount} 
             handlePostLike={handlePostLike}
             />
-       )}
+       )} */}
+        { 
+       <Content 
+        isError={state.isError}
+        isLoading={state.isLoading}  
+        tweets={state.tweets}
+        handlePostLike={handlePostLike}
+        errorMessage={state.errorMessage}
+       />
+       } 
       </div>
   </div>);
 };
+
+
+const Content = ({isLoading, isError, errorMessage, tweets, handlePostLike})=>{
+  
+  if(isLoading){
+    return <span>Fetching tweets...</span> 
+  }  else if (isError && errorMessage) {
+    return <span style={{color: 'red'}}>{errorMessage}</span> 
+  }else { 
+    return tweets.map((tweet)=> 
+    <Post 
+      key={tweet.id} 
+      id={tweet.id} 
+      authorPhotoUrl={tweet.authorPhotoUrl} 
+      authorName={tweet.title} 
+      text={tweet.body} 
+      likeCount={tweet.likeCount} 
+      handlePostLike={handlePostLike}
+      />)
+  }
+
+}
