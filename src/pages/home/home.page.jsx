@@ -2,7 +2,9 @@ import { useLocalStorage } from '../../hooks/local-storage.hooks';
 import './home.css'
 import {useRef, useState, useEffect, useReducer,useCallback} from 'react';
 import {tweetReducer, initialState} from '../../reducers/home-reducer/home-reducer'
-import axios from 'axios'
+import axios from 'axios';
+import styles from'./home.module.css'
+import styled from 'styled-components';
 
 const data = [
   {
@@ -33,14 +35,31 @@ const data = [
   }
 ]
 
-const Post = ({id,authorPhotoUrl, authorName, text, likeCount, handlePostLike })=>{
-  return  <div className='tweet'>
-            <div className='first-row'>
+const Button = styled.button`
+  background-color: blue;
+  border-radius: 4px;
+  border-style: none;
+  padding: 2px 8px;
+  
+  &:hover {
+    background-color: orange;
+  }
+`
+
+
+// .first-row{
+//   display: flex;
+//   align-items: center;
+// }
+const Post = ({id,authorPhotoUrl, authorName, text, likeCount, handlePostLike, style })=>{
+  return  <div className={styles.tweet} style={style}>
+            <div className='flex flex-col lg:flex-row bg-black md:bg-red-500 lg:bg-white items-center justify-end p-1 hover:animate-ping'>
               <img src={authorPhotoUrl} width={50} height={50}  />
               <span>{authorName}</span>
             </div>
             <div>{text}</div>
-            <button onClick={()=>handlePostLike(id)}>{likeCount} Like</button>
+            {/* <button onClick={handleSubmite}></button> */}
+            <Button onClick={()=>window.alert("Liked!")}>{likeCount} Like</Button>
           </div>
 }
 
@@ -250,6 +269,9 @@ const Content = ({isLoading, isError, errorMessage, tweets, handlePostLike})=>{
       text={tweet.body} 
       likeCount={tweet.likeCount} 
       handlePostLike={handlePostLike}
+      style={{
+          padding: "16px 32px"
+        }}
       />)
   }
 
