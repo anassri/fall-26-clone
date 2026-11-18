@@ -13,7 +13,7 @@ export const useLocalStorage = (key)=>{
   
     useEffect(()=>{
       window.localStorage.setItem(key, keyword)
-    }, [keyword])
+    }, [keyword, key])
 
     return {
         keyword,

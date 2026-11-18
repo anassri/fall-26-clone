@@ -51,7 +51,7 @@ const Button = styled.button`
 //   display: flex;
 //   align-items: center;
 // }
-const Post = ({id,authorPhotoUrl, authorName, text, likeCount, handlePostLike, style })=>{
+const Post = ({authorPhotoUrl, authorName, text, likeCount,style })=>{
   return  <div className={styles.tweet} style={style}>
             <div className='flex flex-col lg:flex-row bg-black md:bg-red-500 lg:bg-white items-center justify-end p-1 hover:animate-ping'>
               <img src={authorPhotoUrl} width={50} height={50}  />
@@ -64,7 +64,7 @@ const Post = ({id,authorPhotoUrl, authorName, text, likeCount, handlePostLike, s
 }
 
 
-export const SearchComposer = ({searchKeyword,handleSearch, setSearchKeyword, handleClear })=>{
+export const SearchComposer = ({handleSearch, handleClear })=>{
    const {keyword, setKeyword}= useLocalStorage('mostRecentKeyword');
    const inputRef = useRef("");
    const clearButtonRef = useRef();
@@ -117,7 +117,7 @@ export const SearchComposer = ({searchKeyword,handleSearch, setSearchKeyword, ha
 // componentDidUpdate => items in dependency array
 // componentDidUnmount
 
-const PostComposer = ({setNewTweet, newTweet, handlePosting})=>{
+const PostComposer = ({handlePosting})=>{
   const {keyword, setKeyword}= useLocalStorage('mostRecentPost');
 
   const handleSubmit = (e)=>{
@@ -138,7 +138,7 @@ const BASE_URL = "https://jsonplaceholder.typicode.com";
 export const Home = () => {
   const [tweets, setTweets] = useState(data);
   const [newTweet, setNewTweet] = useState('');
-  const [filteredTweets, setFilteredTweets] = useState(tweets);
+  const [,setFilteredTweets] = useState(tweets);
   const [searchKeyword, setSearchKeyword] = useState('');
 
 
@@ -165,10 +165,6 @@ export const Home = () => {
     const results = tweets.filter((tweet)=>tweet.text.toLowerCase().includes(value.toLowerCase()));
     setFilteredTweets(results);
   }
-  
-  const handleClear = ()=>{
-    setFilteredTweets(tweets)
-  }
 
   const fetchPosts = useCallback(async ()=>{
     dispatch({type: "LOADING"});
@@ -186,7 +182,9 @@ export const Home = () => {
     setTimeout(async ()=>{
       // async/await
       try{
-        const data = await axios.get(`${BASE_URL}/posts`);
+        const data = await fetch(`${BASE_URL}/posts`);
+        // const body = await data.json();
+        console.log(data)
         if(data.status === 200){
           dispatch({type: 'SUCCESS', payload:data.data });
         } 
@@ -217,7 +215,9 @@ export const Home = () => {
         searchKeyword={searchKeyword} 
         handleSearch={handleSearch} 
         setSearchKeyword={setSearchKeyword} 
-        handleClear={handleClear}
+        handleClear={()=>{
+          setFilteredTweets(tweets)
+        }}
       />
       <PostComposer 
         newTweet={newTweet}
